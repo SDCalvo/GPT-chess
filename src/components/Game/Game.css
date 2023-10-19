@@ -1,0 +1,26 @@
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #282c34; /* Dark background color */
+    color: white; /* White text color */
+  }
+  
+  .title {
+    font-size: 48px;
+    margin-bottom: 20px;
+  }
+  
+  .console {
+    width: 80%;
+    min-height: 100px;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f0f0f0; /* Light gray background */
+    color: black; /* Black text color */
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Rounded corners */
+    font-family: monospace;
+    font-size: 16px;
+  }
