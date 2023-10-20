@@ -15,7 +15,13 @@ const isFriendlyPiece = (move: IMove, board: string[][]): boolean => {
   const { piece, to } = move;
   const destinationPiece = board[to.row][to.column];
   if (destinationPiece === "") return false; // No piece at destination
-  return piece.toLowerCase() === destinationPiece.toLowerCase(); // Compare pieces ignoring case
+  // Checks if both pieces are uppercase or both pieces are lowercase, which would mean they belong to the same player
+  return (
+    (piece === piece.toUpperCase() &&
+      destinationPiece === destinationPiece.toUpperCase()) ||
+    (piece === piece.toLowerCase() &&
+      destinationPiece === destinationPiece.toLowerCase())
+  );
 };
 
 export const isValidMove = (move: IMove, board: string[][]): boolean => {
@@ -26,13 +32,13 @@ export const isValidMove = (move: IMove, board: string[][]): boolean => {
     case "r":
       return isValidRookMove(move, board);
     case "n":
-      return isValidKnightMove(move);
+      return isValidKnightMove(move, board);
     case "b":
       return isValidBishopMove(move, board);
     case "q":
       return isValidQueenMove(move, board);
     case "k":
-      return isValidKingMove(move);
+      return isValidKingMove(move, board);
     default:
       return false;
   }
@@ -51,9 +57,10 @@ const isValidPawnMove = (move: IMove, board: string[][]): boolean => {
     } else if (
       from.row === startRow &&
       from.row + 2 * direction === to.row &&
-      board[to.row][to.column] === ""
+      board[to.row][to.column] === "" &&
+      board[from.row + direction][from.column] === ""
     ) {
-      // Moving forward two squares on the first move
+      // Moving forward two squares on the first move, checking if the path is clear
       return true;
     }
   }
@@ -62,7 +69,8 @@ const isValidPawnMove = (move: IMove, board: string[][]): boolean => {
   if (
     Math.abs(from.column - to.column) === 1 &&
     from.row + direction === to.row &&
-    board[to.row][to.column] !== ""
+    board[to.row][to.column] !== "" &&
+    !isFriendlyPiece(move, board)
   ) {
     return true;
   }
@@ -83,7 +91,8 @@ const isValidRookMove = (move: IMove, board: string[][]): boolean => {
         return false;
       }
     }
-    return true;
+    // Check the destination square
+    return !isFriendlyPiece(move, board);
   }
 
   // Check if moving along a column
@@ -96,17 +105,11 @@ const isValidRookMove = (move: IMove, board: string[][]): boolean => {
         return false;
       }
     }
-    return true;
+    // Check the destination square
+    return !isFriendlyPiece(move, board);
   }
 
   return false;
-};
-
-const isValidKnightMove = (move: IMove): boolean => {
-  const { from, to } = move;
-  const rowDiff = Math.abs(from.row - to.row);
-  const colDiff = Math.abs(from.column - to.column);
-  return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
 };
 
 const isValidBishopMove = (move: IMove, board: string[][]): boolean => {
@@ -127,16 +130,48 @@ const isValidBishopMove = (move: IMove, board: string[][]): boolean => {
     col += colStep;
   }
 
-  return true;
+  // Check the destination square
+  return !isFriendlyPiece(move, board);
 };
 
-const isValidQueenMove = (move: IMove, board: string[][]): boolean => {
-  return isValidRookMove(move, board) || isValidBishopMove(move, board);
-};
-
-const isValidKingMove = (move: IMove): boolean => {
+const isValidKnightMove = (move: IMove, board: string[][]): boolean => {
   const { from, to } = move;
   const rowDiff = Math.abs(from.row - to.row);
   const colDiff = Math.abs(from.column - to.column);
-  return rowDiff <= 1 && colDiff <= 1;
+  return (
+    ((rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2)) &&
+    !isFriendlyPiece(move, board)
+  );
+};
+
+const isValidQueenMove = (move: IMove, board: string[][]): boolean => {
+  return (
+    (isValidRookMove(move, board) || isValidBishopMove(move, board)) &&
+    !isFriendlyPiece(move, board)
+  );
+};
+
+const isValidKingMove = (move: IMove, board: string[][]): boolean => {
+  const { from, to } = move;
+  const rowDiff = Math.abs(from.row - to.row);
+  const colDiff = Math.abs(from.column - to.column);
+  return rowDiff <= 1 && colDiff <= 1 && !isFriendlyPiece(move, board);
+};
+
+export const highlightValidSelectedPieceMoves = (
+  board: string[][],
+  selectedPiece: IPosition
+): string[][] => {
+  const highlightedBoard = board.map((row) => row.map((cell) => cell));
+  const piece = board[selectedPiece.row][selectedPiece.column];
+  if (piece === "") return highlightedBoard;
+  for (let row = 0; row < highlightedBoard.length; row++) {
+    for (let column = 0; column < highlightedBoard[row].length; column++) {
+      const move = { piece, from: selectedPiece, to: { row, column } };
+      if (isValidMove(move, board)) {
+        highlightedBoard[row][column] = "highlighted";
+      }
+    }
+  }
+  return highlightedBoard;
 };

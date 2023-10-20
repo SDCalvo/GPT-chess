@@ -1,7 +1,10 @@
 // src/components/Board/Board.tsx
-import React, { use, useContext, useEffect } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import { GameContext } from "../../context/GameContext";
-import { IPosition } from "../../logic/gameLogic";
+import {
+  IPosition,
+  highlightValidSelectedPieceMoves,
+} from "../../logic/gameLogic";
 import "./Board.css";
 import RenderPiece from "./renderPiece";
 
@@ -12,30 +15,51 @@ interface BoardProps {
 const Board: React.FC<BoardProps> = ({ handleMove }) => {
   const { state, dispatch } = useContext(GameContext);
   const { board, selectedPiece, currentTurn } = state;
+  const [highlightedCells, setHighlightedCells] = useState<string[][]>([]);
 
   useEffect(() => {
     console.log("State changed: ", state);
   }, [state]);
 
-  const handleCellClick = (rowIndex: number, columnIndex: number) => {
-    if (currentTurn === "black") return;
-    if (selectedPiece && isEmptyCell(rowIndex, columnIndex)) {
-      // Second Click: Attempt to move the piece
+  const handleSelectPiece = (rowIndex: number, columnIndex: number) => {
+    dispatch({
+      type: "SELECT_PIECE",
+      payload: { row: rowIndex, column: columnIndex },
+    });
+    const highlighted = highlightValidSelectedPieceMoves(board, {
+      row: rowIndex,
+      column: columnIndex,
+    });
+    setHighlightedCells(highlighted);
+  };
 
-      handleMove(selectedPiece, { row: rowIndex, column: columnIndex });
-      dispatch({ type: "CLEAR_SELECTED_PIECE" }); // Clear the selected piece
-    } else if (!selectedPiece && isEmptyCell(rowIndex, columnIndex)) {
-      // Empty Cell: Do nothing
-    } else if (
+  const handleMovePiece = (rowIndex: number, columnIndex: number) => {
+    handleMove(selectedPiece, { row: rowIndex, column: columnIndex });
+    dispatch({ type: "CLEAR_SELECTED_PIECE" });
+  };
+
+  const handleEmptyCellClick = () => {
+    // Empty Cell: Do nothing for now, but this function can be expanded later if needed
+  };
+
+  const handleCellClick = (rowIndex: number, columnIndex: number) => {
+    setHighlightedCells([]);
+    if (currentTurn === "black") return;
+
+    const isOtherPieceFromSamePlayer =
       isPlayerPiece(board, rowIndex, columnIndex) &&
-      !selectedPiece &&
-      !isEmptyCell(rowIndex, columnIndex)
-    ) {
-      // First Click: Select the piece
-      dispatch({
-        type: "SELECT_PIECE",
-        payload: { row: rowIndex, column: columnIndex },
-      });
+      !isSelected(rowIndex, columnIndex);
+
+    if (selectedPiece && !isEmptyCell(rowIndex, columnIndex)) {
+      if (isOtherPieceFromSamePlayer) {
+        handleSelectPiece(rowIndex, columnIndex);
+        return;
+      }
+      handleMovePiece(rowIndex, columnIndex);
+    } else if (!selectedPiece && isEmptyCell(rowIndex, columnIndex)) {
+      handleEmptyCellClick();
+    } else if (isOtherPieceFromSamePlayer) {
+      handleSelectPiece(rowIndex, columnIndex);
     }
   };
 
@@ -68,10 +92,15 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
         const columnIndex = index % 8;
         const isOddRow = rowIndex % 2 === 1;
         const isOddCol = columnIndex % 2 === 1;
-        const backgroundColor =
-          (isOddRow && isOddCol) || (!isOddRow && !isOddCol)
-            ? "#F7DCB4"
-            : "#8B4513";
+        const isHighlighted =
+          highlightedCells[rowIndex] &&
+          highlightedCells[rowIndex][columnIndex] === "highlighted";
+
+        const backgroundColor = isHighlighted
+          ? "green"
+          : (isOddRow && isOddCol) || (!isOddRow && !isOddCol)
+          ? "#F7DCB4"
+          : "#8B4513";
         return (
           <div
             className={`cell ${

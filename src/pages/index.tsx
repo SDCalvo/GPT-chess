@@ -5,7 +5,7 @@ import { GameProvider } from "@/context/GameContext";
 const IndexPage: React.FC = () => {
   return (
     <GameProvider>
-      <div id="game-container">
+      <div id="main-container">
         <Game />
       </div>
     </GameProvider>
