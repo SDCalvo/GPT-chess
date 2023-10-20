@@ -3,6 +3,7 @@
     grid-template-columns: repeat(8, 50px);
     grid-template-rows: repeat(8, 50px);
     gap: 0;
+    margin-top: 5rem;
   }
   
   .cell {
@@ -16,13 +17,4 @@
 
   .cell.selected {
     border: 2px solid blue;  /* or any other styling you prefer */
-  }
-  
-  /* Adjust the formula for alternating colors */
-  .cell:nth-child(odd) {
-    background-color: white;
-  }
-  
-  .cell:nth-child(even) {
-    background-color: black;
   }

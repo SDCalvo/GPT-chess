@@ -3,6 +3,7 @@ import React, { use, useContext, useEffect } from "react";
 import { GameContext } from "../../context/GameContext";
 import { IPosition } from "../../logic/gameLogic";
 import "./Board.css";
+import RenderPiece from "./renderPiece";
 
 interface BoardProps {
   handleMove: (from: IPosition, to: IPosition) => void; // Adjusted prop type
@@ -69,8 +70,8 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
         const isOddCol = columnIndex % 2 === 1;
         const backgroundColor =
           (isOddRow && isOddCol) || (!isOddRow && !isOddCol)
-            ? "white"
-            : "black";
+            ? "#F7DCB4"
+            : "#8B4513";
         return (
           <div
             className={`cell ${
@@ -80,7 +81,7 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
             onClick={() => handleCellClick(rowIndex, columnIndex)}
             style={{ backgroundColor }}
           >
-            {cell}
+            {RenderPiece(cell)}
           </div>
         );
       })}
