@@ -1,5 +1,5 @@
 // src/components/Board/Board.tsx
-import React, { useContext } from "react";
+import React, { use, useContext, useEffect } from "react";
 import { GameContext } from "../../context/GameContext";
 import { IPosition } from "../../logic/gameLogic";
 import "./Board.css";
@@ -9,17 +9,56 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ handleMove }) => {
-  const { state } = useContext(GameContext);
-  const { board } = state;
+  const { state, dispatch } = useContext(GameContext);
+  const { board, selectedPiece, currentTurn } = state;
 
-  const handleCellClick = (row: number, column: number) => {
-    const piece = board[row][column];
-    if (piece) {
-      // Assume `to` position is determined elsewhere for now
-      const to: IPosition = { row: row + 1, column }; // Adjusted to position type
-      handleMove({ row, column }, to); // Adjusted function call
+  useEffect(() => {
+    console.log("State changed: ", state);
+  }, [state]);
+
+  const handleCellClick = (rowIndex: number, columnIndex: number) => {
+    if (currentTurn === "black") return;
+    if (selectedPiece && isEmptyCell(rowIndex, columnIndex)) {
+      // Second Click: Attempt to move the piece
+
+      handleMove(selectedPiece, { row: rowIndex, column: columnIndex });
+      dispatch({ type: "CLEAR_SELECTED_PIECE" }); // Clear the selected piece
+    } else if (!selectedPiece && isEmptyCell(rowIndex, columnIndex)) {
+      // Empty Cell: Do nothing
+    } else if (
+      isPlayerPiece(board, rowIndex, columnIndex) &&
+      !selectedPiece &&
+      !isEmptyCell(rowIndex, columnIndex)
+    ) {
+      // First Click: Select the piece
+      dispatch({
+        type: "SELECT_PIECE",
+        payload: { row: rowIndex, column: columnIndex },
+      });
     }
   };
+
+  function isEmptyCell(row: number, col: number) {
+    return board[row][col] === "";
+  }
+
+  function isPlayerPiece(board: string[][], row: number, col: number) {
+    const piece = board[row][col];
+    return (
+      (isUpperCase(piece) && currentTurn === "white") ||
+      (!isUpperCase(piece) && currentTurn === "black")
+    );
+  }
+
+  function isUpperCase(char: string) {
+    return char === char.toUpperCase();
+  }
+
+  function isSelected(row: number, col: number) {
+    return (
+      selectedPiece && selectedPiece.row === row && selectedPiece.column === col
+    );
+  }
 
   return (
     <div className="board">
@@ -34,7 +73,9 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
             : "black";
         return (
           <div
-            className="cell"
+            className={`cell ${
+              isSelected(rowIndex, columnIndex) ? "selected" : ""
+            }`}
             key={index}
             onClick={() => handleCellClick(rowIndex, columnIndex)}
             style={{ backgroundColor }}

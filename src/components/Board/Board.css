@@ -13,6 +13,10 @@
     align-items: center;
     justify-content: center;
   }
+
+  .cell.selected {
+    border: 2px solid blue;  /* or any other styling you prefer */
+  }
   
   /* Adjust the formula for alternating colors */
   .cell:nth-child(odd) {

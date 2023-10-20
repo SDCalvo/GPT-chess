@@ -7,7 +7,7 @@ import "./Game.css";
 
 const Game: React.FC = () => {
   const { state, dispatch } = useContext(GameContext);
-  const { board } = state;
+  const { board, currentTurn } = state;
 
   const handlePieceMove = (from: IPosition, to: IPosition) => {
     const move: IMove = { piece: board[from.row][from.column], from, to };
@@ -24,6 +24,8 @@ const Game: React.FC = () => {
           payload: { capturingPiecePos: from, capturedPiecePos: to },
         });
       }
+      dispatch({ type: "CHANGE_TURN" });
+      dispatch({ type: "CLEAR_SELECTED_PIECE" });
     }
   };
 

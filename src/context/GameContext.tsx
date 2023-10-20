@@ -24,6 +24,8 @@ const initialBoard = [
 
 const initialState = {
   board: initialBoard,
+  selectedPiece: null,
+  currentTurn: "white",
 };
 
 const gameReducer = (state: any, action: any) => {
@@ -31,6 +33,19 @@ const gameReducer = (state: any, action: any) => {
     case "MOVE_PIECE":
       // Complete latter
       return state;
+    case "CAPTURE_PIECE":
+      // Complete latter
+      return state;
+    case "SELECT_PIECE":
+      return { ...state, selectedPiece: action.payload };
+    case "CLEAR_SELECTED_PIECE":
+      return { ...state, selectedPiece: null };
+    case "CHANGE_TURN":
+      const updatedState = {
+        ...state,
+        currentTurn: state.currentTurn === "white" ? "black" : "white",
+      };
+      return updatedState;
     default:
       return state;
   }
