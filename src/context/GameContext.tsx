@@ -11,6 +11,13 @@ interface GameProviderProps {
   children: React.ReactNode;
 }
 
+export enum EGameStatus {
+  Ongoing = "ongoing",
+  Checkmate = "checkmate",
+  Stalemate = "stalemate",
+  Draw = "draw",
+}
+
 const initialBoard = [
   ["r", "n", "b", "q", "k", "b", "n", "r"],
   ["p", "p", "p", "p", "p", "p", "p", "p"],
@@ -26,6 +33,7 @@ const initialState = {
   board: initialBoard,
   selectedPiece: null,
   currentTurn: "white",
+  gameStatus: EGameStatus.Ongoing,
 };
 
 const gameReducer = (state: any, action: any) => {
@@ -66,16 +74,39 @@ const gameReducer = (state: any, action: any) => {
         board: newBoardCapture,
         currentTurn: state.currentTurn === "white" ? "black" : "white",
       };
+
     case "SELECT_PIECE":
       return { ...state, selectedPiece: action.payload };
+
     case "CLEAR_SELECTED_PIECE":
       return { ...state, selectedPiece: null };
+
     case "CHANGE_TURN":
       const updatedState = {
         ...state,
         currentTurn: state.currentTurn === "white" ? "black" : "white",
       };
       return updatedState;
+
+    case "CHECKMATE":
+      return {
+        ...state,
+        gameStatus: EGameStatus.Checkmate,
+        winner: action.payload.winner,
+      };
+
+    case "STALEMATE":
+      return {
+        ...state,
+        gameStatus: EGameStatus.Stalemate,
+      };
+
+    case "DRAW":
+      return {
+        ...state,
+        gameStatus: EGameStatus.Draw,
+      };
+
     default:
       return state;
   }

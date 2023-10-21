@@ -1,23 +1,32 @@
 // src/components/Board/Board.tsx
-import React, { use, useContext, useEffect, useState } from "react";
-import { GameContext } from "../../context/GameContext";
+import React, {
+  use,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { EGameStatus, GameContext } from "../../context/GameContext";
 import {
   IMove,
   IPosition,
+  hasLegalMoves,
   highlightValidSelectedPieceMoves,
+  isKingInCheck,
   isValidMove,
 } from "../../logic/gameLogic";
 import "./Board.css";
 import RenderPiece from "./renderPiece";
+import {
+  fiftyMoveRule,
+  insufficientMaterial,
+  threefoldRepetition,
+} from "@/logic/checkDrawHelpers";
 
 const Board: React.FC = () => {
   const { state, dispatch } = useContext(GameContext);
   const { board, selectedPiece, currentTurn } = state;
   const [highlightedCells, setHighlightedCells] = useState<string[][]>([]);
-
-  useEffect(() => {
-    console.log("State changed: ", state);
-  }, [state]);
 
   const handleSelectPiece = (rowIndex: number, columnIndex: number) => {
     if (!isPlayerPiece(board, rowIndex, columnIndex)) {
@@ -36,7 +45,6 @@ const Board: React.FC = () => {
   };
 
   const handleMovePiece = (rowIndex: number, columnIndex: number) => {
-    console.log("handleMovePiece");
     const from = { row: selectedPiece.row, column: selectedPiece.column };
     const to = { row: rowIndex, column: columnIndex };
     const piece = board[from.row][from.column];
@@ -120,9 +128,58 @@ const Board: React.FC = () => {
     );
   }
 
+  const checkGameStatus = useCallback(
+    (board: string[][], currentTurn: "white" | "black") => {
+      const opponent = currentTurn === "white" ? "black" : "white";
+
+      // Check for checkmate or stalemate
+      if (isKingInCheck(board, opponent)) {
+        if (!hasLegalMoves(board, opponent)) {
+          console.log("-----------------------------------------------------");
+          console.log(`${currentTurn} wins by checkmate!`);
+          console.log("-----------------------------------------------------");
+          dispatch({
+            type: EGameStatus.Checkmate,
+            payload: { winner: currentTurn },
+          });
+        }
+      } else if (!hasLegalMoves(board, opponent)) {
+        console.log("-----------------------------------------------------");
+        console.log("The game is a stalemate!");
+        console.log("-----------------------------------------------------");
+        dispatch({ type: EGameStatus.Stalemate });
+      }
+
+      // Check for insufficient material
+      if (insufficientMaterial(board)) {
+        console.log("-----------------------------------------------------");
+        console.log("The game is a draw due to insufficient material!");
+        console.log("-----------------------------------------------------");
+        dispatch({ type: EGameStatus.Draw });
+      }
+      //---------------------------------------------------------------- To implement later
+      // Check for threefold repetition
+      // if (threefoldRepetition(, board)) {
+      //   console.log("The game is a draw due to threefold repetition!");
+      //   dispatch({ type: EGameStatus.Draw });
+      // }
+
+      // Check for fifty-move rule
+      // if (fiftyMoveRule(board)) {
+      //   console.log("The game is a draw due to the fifty-move rule!");
+      //   dispatch({ type: EGameStatus.Draw });
+      // }
+    },
+    [dispatch] // dispatch is the dependency here, assuming it's coming from a useContext hook or similar
+  );
+
+  // Call checkGameStatus function after each move
+  useEffect(() => {
+    checkGameStatus(board, currentTurn);
+  }, [board, currentTurn, checkGameStatus]);
+
   useEffect(() => {
     if (!selectedPiece) {
-      console.log("clearing highlighted cells due to selectedPiece change");
       setHighlightedCells([]);
     }
   }, [selectedPiece]);

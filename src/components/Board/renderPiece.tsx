@@ -39,8 +39,7 @@ const RenderPiece = (piece: string) => {
         alignItems: "center",
         height: "90%",
         width: "90%",
-        //black and white with opactiy 0.3
-        backgroundColor: isUpperCase ? "#0000004d" : "#ffffff4d",
+        backgroundColor: "#0000004d",
         borderRadius: "50%",
       }}
     >

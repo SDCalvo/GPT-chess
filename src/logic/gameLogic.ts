@@ -1,5 +1,14 @@
 // src/logic/gameLogic.ts
 
+import {
+  isThreatenedByBishop,
+  isThreatenedByKing,
+  isThreatenedByKnight,
+  isThreatenedByPawn,
+  isThreatenedByQueen,
+  isThreatenedByRook,
+} from "./threatened";
+
 export interface IPosition {
   row: number;
   column: number;
@@ -155,7 +164,19 @@ const isValidKingMove = (move: IMove, board: string[][]): boolean => {
   const { from, to } = move;
   const rowDiff = Math.abs(from.row - to.row);
   const colDiff = Math.abs(from.column - to.column);
-  return rowDiff <= 1 && colDiff <= 1 && !isFriendlyPiece(move, board);
+
+  if (rowDiff <= 1 && colDiff <= 1 && !isFriendlyPiece(move, board)) {
+    // Create a copy of the board to test the move
+    const boardCopy = board.map((row) => row.slice());
+    // Move the king to the new position on the copied board
+    boardCopy[to.row][to.column] = boardCopy[from.row][from.column];
+    boardCopy[from.row][from.column] = "";
+    // Check if the king would still be in check after the move
+    const player = move.piece === "K" ? "white" : "black";
+    return !isKingInCheck(boardCopy, player);
+  }
+
+  return false;
 };
 
 export const highlightValidSelectedPieceMoves = (
@@ -175,3 +196,114 @@ export const highlightValidSelectedPieceMoves = (
   }
   return highlightedBoard;
 };
+
+export const getAllValidMoves = (
+  board: string[][],
+  player: "white" | "black"
+): IMove[] => {
+  const validMoves: IMove[] = [];
+  const isKingChecked = isKingInCheck(board, player);
+
+  for (let row = 0; row < board.length; row++) {
+    for (let column = 0; column < board[row].length; column++) {
+      const piece = board[row][column];
+      if (
+        (player === "white" && isUpperCase(piece)) ||
+        (player === "black" && !isUpperCase(piece))
+      ) {
+        const from: IPosition = { row, column };
+        for (let targetRow = 0; targetRow < board.length; targetRow++) {
+          for (
+            let targetColumn = 0;
+            targetColumn < board[targetRow].length;
+            targetColumn++
+          ) {
+            const to: IPosition = { row: targetRow, column: targetColumn };
+            const move: IMove = { piece, from, to };
+            if (isValidMove(move, board)) {
+              if (isKingChecked) {
+                // Create a copy of the board to test the move
+                const boardCopy = board.map((row) => row.slice());
+                // Execute the move on the copied board
+                boardCopy[to.row][to.column] = boardCopy[from.row][from.column];
+                boardCopy[from.row][from.column] = "";
+                // Check if the move resolves the check
+                if (!isKingInCheck(boardCopy, player)) {
+                  validMoves.push(move);
+                }
+              } else {
+                validMoves.push(move);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return validMoves;
+};
+
+export const hasLegalMoves = (
+  board: string[][],
+  player: "white" | "black"
+): boolean => {
+  const legalMoves = getAllValidMoves(board, player);
+  return legalMoves.length > 0;
+};
+
+export const isKingInCheck = (
+  board: string[][],
+  player: "white" | "black"
+): boolean => {
+  console.log("Checking if king is in check");
+  let kingPosition: IPosition | null = null;
+  const opponent = player === "white" ? "black" : "white";
+
+  // Find the king's position
+  for (let row = 0; row < board.length; row++) {
+    for (let col = 0; col < board[row].length; col++) {
+      const piece = board[row][col];
+      if (
+        piece.toLowerCase() === "k" &&
+        ((player === "white" && piece === piece.toUpperCase()) ||
+          (player === "black" && piece === piece.toLowerCase()))
+      ) {
+        kingPosition = { row, column: col };
+        break;
+      }
+    }
+    if (kingPosition) break;
+  }
+
+  if (!kingPosition) {
+    console.error("King not found on the board");
+    return false; // or throw an error
+  }
+
+  // Check threats from each type of opposing piece
+  // if (isThreatenedByPawn(board, kingPosition, opponent))
+  //   console.log(`--The ${player} king is in check by a pawn`);
+  // if (isThreatenedByRook(board, kingPosition, opponent))
+  //   console.log(`--The ${player} king is in check by a rook`);
+  // if (isThreatenedByKnight(board, kingPosition, opponent))
+  //   console.log(`--The ${player} king is in check by a knight`);
+  // if (isThreatenedByBishop(board, kingPosition, opponent))
+  //   console.log(`--The ${player} king is in check by a bishop`);
+  // if (isThreatenedByQueen(board, kingPosition, opponent))
+  //   console.log(`--The ${player} king is in check by a queen`);
+  // if (isThreatenedByKing(board, kingPosition, opponent))
+  //   console.log(`--The ${player} king is in check by a king`);
+
+  return (
+    isThreatenedByPawn(board, kingPosition, opponent) ||
+    isThreatenedByRook(board, kingPosition, opponent) ||
+    isThreatenedByKnight(board, kingPosition, opponent) ||
+    isThreatenedByBishop(board, kingPosition, opponent) ||
+    isThreatenedByQueen(board, kingPosition, opponent) ||
+    isThreatenedByKing(board, kingPosition, opponent)
+  );
+};
+
+function isUpperCase(char: string) {
+  return char === char.toUpperCase() && char !== "";
+}
