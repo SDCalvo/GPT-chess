@@ -31,11 +31,41 @@ const initialState = {
 const gameReducer = (state: any, action: any) => {
   switch (action.type) {
     case "MOVE_PIECE":
-      // Complete latter
-      return state;
+      const newBoardMove = state.board.map((row: string[], rowIndex: number) =>
+        row.map((cell: string, colIndex: number) =>
+          rowIndex === action.payload.from.row &&
+          colIndex === action.payload.from.column
+            ? ""
+            : rowIndex === action.payload.to.row &&
+              colIndex === action.payload.to.column
+            ? state.board[action.payload.from.row][action.payload.from.column]
+            : cell
+        )
+      );
+      return {
+        ...state,
+        board: newBoardMove,
+        currentTurn: state.currentTurn === "white" ? "black" : "white",
+      };
+
     case "CAPTURE_PIECE":
-      // Complete latter
-      return state;
+      const newBoardCapture = state.board.map(
+        (row: string[], rowIndex: number) =>
+          row.map((cell: string, colIndex: number) =>
+            rowIndex === action.payload.from.row &&
+            colIndex === action.payload.from.column
+              ? ""
+              : rowIndex === action.payload.to.row &&
+                colIndex === action.payload.to.column
+              ? state.board[action.payload.from.row][action.payload.from.column]
+              : cell
+          )
+      );
+      return {
+        ...state,
+        board: newBoardCapture,
+        currentTurn: state.currentTurn === "white" ? "black" : "white",
+      };
     case "SELECT_PIECE":
       return { ...state, selectedPiece: action.payload };
     case "CLEAR_SELECTED_PIECE":

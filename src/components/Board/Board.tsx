@@ -2,17 +2,15 @@
 import React, { use, useContext, useEffect, useState } from "react";
 import { GameContext } from "../../context/GameContext";
 import {
+  IMove,
   IPosition,
   highlightValidSelectedPieceMoves,
+  isValidMove,
 } from "../../logic/gameLogic";
 import "./Board.css";
 import RenderPiece from "./renderPiece";
 
-interface BoardProps {
-  handleMove: (from: IPosition, to: IPosition) => void; // Adjusted prop type
-}
-
-const Board: React.FC<BoardProps> = ({ handleMove }) => {
+const Board: React.FC = () => {
   const { state, dispatch } = useContext(GameContext);
   const { board, selectedPiece, currentTurn } = state;
   const [highlightedCells, setHighlightedCells] = useState<string[][]>([]);
@@ -22,6 +20,10 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
   }, [state]);
 
   const handleSelectPiece = (rowIndex: number, columnIndex: number) => {
+    if (!isPlayerPiece(board, rowIndex, columnIndex)) {
+      console.error("Invalid selection: not a friendly piece or empty cell");
+      return;
+    }
     dispatch({
       type: "SELECT_PIECE",
       payload: { row: rowIndex, column: columnIndex },
@@ -34,7 +36,28 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
   };
 
   const handleMovePiece = (rowIndex: number, columnIndex: number) => {
-    handleMove(selectedPiece, { row: rowIndex, column: columnIndex });
+    console.log("handleMovePiece");
+    const from = { row: selectedPiece.row, column: selectedPiece.column };
+    const to = { row: rowIndex, column: columnIndex };
+    const piece = board[from.row][from.column];
+    const move: IMove = { piece, from, to };
+
+    // Check if the move is valid
+    if (!isValidMove(move, board)) {
+      console.error("Invalid move");
+      return;
+    }
+
+    const destinationCell = board[rowIndex][columnIndex];
+    const actionType = destinationCell === "" ? "MOVE_PIECE" : "CAPTURE_PIECE";
+
+    dispatch({
+      type: actionType,
+      payload: {
+        from: selectedPiece,
+        to: { row: rowIndex, column: columnIndex },
+      },
+    });
     dispatch({ type: "CLEAR_SELECTED_PIECE" });
   };
 
@@ -43,23 +66,35 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
   };
 
   const handleCellClick = (rowIndex: number, columnIndex: number) => {
-    setHighlightedCells([]);
     if (currentTurn === "black") return;
 
     const isOtherPieceFromSamePlayer =
       isPlayerPiece(board, rowIndex, columnIndex) &&
       !isSelected(rowIndex, columnIndex);
 
-    if (selectedPiece && !isEmptyCell(rowIndex, columnIndex)) {
-      if (isOtherPieceFromSamePlayer) {
-        handleSelectPiece(rowIndex, columnIndex);
-        return;
+    if (selectedPiece) {
+      if (!isEmptyCell(rowIndex, columnIndex)) {
+        if (isOtherPieceFromSamePlayer) {
+          handleSelectPiece(rowIndex, columnIndex);
+          return;
+        }
+        handleMovePiece(rowIndex, columnIndex);
+      } else {
+        // The cell is empty, and there's a selected piece, so we attempt to move the piece to this location.
+        handleMovePiece(rowIndex, columnIndex);
       }
-      handleMovePiece(rowIndex, columnIndex);
-    } else if (!selectedPiece && isEmptyCell(rowIndex, columnIndex)) {
-      handleEmptyCellClick();
-    } else if (isOtherPieceFromSamePlayer) {
+      // Re-calculate and re-render the valid moves for the selected piece after attempting a move.
+      const highlighted = highlightValidSelectedPieceMoves(
+        board,
+        selectedPiece
+      );
+      setHighlightedCells(highlighted);
+    } else if (!selectedPiece && isOtherPieceFromSamePlayer) {
+      // No piece is selected, and the cell clicked on has a friendly piece, so we select it.
       handleSelectPiece(rowIndex, columnIndex);
+    } else {
+      // No piece is selected, and the cell clicked on is empty or has an enemy piece.
+      handleEmptyCellClick();
     }
   };
 
@@ -84,6 +119,26 @@ const Board: React.FC<BoardProps> = ({ handleMove }) => {
       selectedPiece && selectedPiece.row === row && selectedPiece.column === col
     );
   }
+
+  useEffect(() => {
+    if (!selectedPiece) {
+      console.log("clearing highlighted cells due to selectedPiece change");
+      setHighlightedCells([]);
+    }
+  }, [selectedPiece]);
+
+  // Debug event listener to change turn when pressing key "U"
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === "u") {
+        dispatch({ type: "CHANGE_TURN" });
+      }
+    };
+    window.addEventListener("keypress", handleKeyPress);
+    return () => {
+      window.removeEventListener("keypress", handleKeyPress);
+    };
+  }, [dispatch]);
 
   return (
     <div className="board">
