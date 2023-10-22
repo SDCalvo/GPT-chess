@@ -10,6 +10,7 @@ import { EGameStatus, GameContext } from "../../context/GameContext";
 import {
   IMove,
   IPosition,
+  getAllValidMoves,
   hasLegalMoves,
   highlightValidSelectedPieceMoves,
   isKingInCheck,
@@ -22,11 +23,11 @@ import {
   insufficientMaterial,
   threefoldRepetition,
 } from "@/logic/checkDrawHelpers";
-import { fetchBlackMove } from "@/logic/requests";
 import { formatMove, formatTile } from "@/logic/helpers";
 import { UiContext } from "@/context/UiContext";
 import PawnCoronationModal from "../Modals/PawnCoronationModal";
 import { ModalContext } from "@/context/ModalContext";
+import { getBlackMove } from "@/logic/requests";
 
 const Board: React.FC = () => {
   const { state, dispatch } = useContext(GameContext);
@@ -111,7 +112,7 @@ const Board: React.FC = () => {
   };
 
   const handleEmptyCellClick = () => {
-    // Empty Cell: Do nothing for now, but this function can be expanded later if needed
+    // Empty Cell: Do nothing for now.
   };
 
   const handleCellClick = (rowIndex: number, columnIndex: number) => {
@@ -248,14 +249,14 @@ const Board: React.FC = () => {
   }, [selectedPiece]);
 
   useEffect(() => {
-    const makeBlackMove = async () => {
+    const makeMove = async () => {
       if (currentTurn === "black") {
-        const move = await fetchBlackMove();
-        dispatch({ type: EGameStatus.Black_Moves, payload: move });
+        const legalMoves = getAllValidMoves(board, "black"); // get all legal moves for black
+        await getBlackMove(board, legalMoves, currentTurn, dispatch);
       }
     };
-    makeBlackMove();
-  }, [currentTurn, dispatch]);
+    makeMove();
+  }, [currentTurn, dispatch, board]);
 
   return (
     <div className="board">

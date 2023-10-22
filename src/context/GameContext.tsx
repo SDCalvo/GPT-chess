@@ -16,7 +16,6 @@ export enum EGameStatus {
   Checkmate = "checkmate",
   Stalemate = "stalemate",
   Draw = "draw",
-  Black_Moves = "black_moves",
 }
 
 const initialBoard = [
@@ -120,14 +119,6 @@ const gameReducer = (state: any, action: any) => {
       return {
         ...state,
         gameStatus: EGameStatus.Draw,
-      };
-
-    case EGameStatus.Black_Moves:
-      // Update your state based on the black's move
-      // For now, it's just changing the turn back to white
-      return {
-        ...state,
-        currentTurn: "white",
       };
 
     case "PAWN_CORONATION":
