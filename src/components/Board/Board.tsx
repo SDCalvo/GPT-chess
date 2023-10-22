@@ -25,12 +25,20 @@ import {
 import { fetchBlackMove } from "@/logic/requests";
 import { formatMove, formatTile } from "@/logic/helpers";
 import { UiContext } from "@/context/UiContext";
+import PawnCoronationModal from "../Modals/PawnCoronationModal";
+import { ModalContext } from "@/context/ModalContext";
 
 const Board: React.FC = () => {
   const { state, dispatch } = useContext(GameContext);
-  const { board, selectedPiece, currentTurn } = state;
   const { uiState, uiDispatch } = useContext(UiContext);
+  const { modalDispatch } = useContext(ModalContext);
+  const { board, selectedPiece, currentTurn } = state;
   const [highlightedCells, setHighlightedCells] = useState<string[][]>([]);
+
+  type GameAction = {
+    type: "PAWN_CORONATION";
+    payload: { position: IPosition; newPiece: string };
+  };
 
   const handleSelectPiece = (rowIndex: number, columnIndex: number) => {
     if (!isPlayerPiece(board, rowIndex, columnIndex)) {
@@ -76,6 +84,30 @@ const Board: React.FC = () => {
     } else {
       logMove(from, to);
     }
+
+    if (isPawnCoronationConditionMet(from, to)) {
+      console.log("Pawn coronation condition met");
+      showModal(to);
+    }
+  };
+
+  const isPawnCoronationConditionMet = (from: IPosition, to: IPosition) => {
+    const piece = board[from.row][from.column];
+    return (
+      piece.toLowerCase() === "p" &&
+      ((currentTurn === "white" && to.row === 0) ||
+        (currentTurn === "black" && to.row === 7))
+    );
+  };
+
+  const showModal = (position: IPosition) => {
+    modalDispatch({
+      type: "SHOW_MODAL",
+      payload: {
+        content: <PawnCoronationModal position={position} />,
+        title: "Pawn Coronation",
+      },
+    });
   };
 
   const handleEmptyCellClick = () => {
@@ -145,26 +177,19 @@ const Board: React.FC = () => {
       if (isKingInCheck(board, opponent)) {
         uiDispatch({ type: "LOG_CHECK", player: opponent });
         if (!hasLegalMoves(board, opponent)) {
-          console.log("-----------------------------------------------------");
-          console.log(`${currentTurn} wins by checkmate!`);
-          console.log("-----------------------------------------------------");
+          const message = `${currentTurn} wins by checkmate!!`;
+          uiDispatch({ type: "ADD_GAME_LOG", payload: message });
           dispatch({
             type: EGameStatus.Checkmate,
             payload: { winner: currentTurn },
           });
         }
       } else if (!hasLegalMoves(board, opponent)) {
-        console.log("-----------------------------------------------------");
-        console.log("The game is a stalemate!");
-        console.log("-----------------------------------------------------");
         dispatch({ type: EGameStatus.Stalemate });
       }
 
       // Check for insufficient material
       if (insufficientMaterial(board)) {
-        console.log("-----------------------------------------------------");
-        console.log("The game is a draw due to insufficient material!");
-        console.log("-----------------------------------------------------");
         dispatch({ type: EGameStatus.Draw });
       }
       //---------------------------------------------------------------- To implement later
@@ -180,7 +205,7 @@ const Board: React.FC = () => {
       //   dispatch({ type: EGameStatus.Draw });
       // }
     },
-    [dispatch] // dispatch is the dependency here, assuming it's coming from a useContext hook or similar
+    [dispatch, uiDispatch]
   );
 
   const logMove = (from: IPosition, to: IPosition) => {
@@ -210,6 +235,7 @@ const Board: React.FC = () => {
       },
     });
   };
+
   // Call checkGameStatus function after each move
   useEffect(() => {
     checkGameStatus(board, currentTurn);

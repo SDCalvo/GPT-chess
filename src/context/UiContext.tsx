@@ -5,15 +5,19 @@ interface UiState {
   playerTurn: "white" | "black";
   aiThinkingProcess: string[];
   logs: string[];
+  modalContent: React.ReactNode | null;
+  isModalOpen: boolean;
 }
 
 const initialUiState: UiState = {
   playerTurn: "white",
-  logs: [],
   aiThinkingProcess: [],
+  logs: [],
+  modalContent: null,
+  isModalOpen: false,
 };
 
-const pieceDictionary: { [key: string]: string } = {
+export const pieceDictionary: { [key: string]: string } = {
   r: "rook",
   n: "knight",
   b: "bishop",

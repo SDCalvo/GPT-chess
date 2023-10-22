@@ -130,6 +130,15 @@ const gameReducer = (state: any, action: any) => {
         currentTurn: "white",
       };
 
+    case "PAWN_CORONATION":
+      const { position, newPiece } = action.payload;
+      const updatedBoard = [...state.board];
+      updatedBoard[position.row][position.column] = newPiece;
+      return {
+        ...state,
+        board: updatedBoard,
+      };
+
     default:
       return state;
   }

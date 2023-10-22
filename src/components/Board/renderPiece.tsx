@@ -24,7 +24,7 @@ const piecesDict: { [key: string]: IconDefinition } = {
   p: faChessPawn,
 };
 
-const RenderPiece = (piece: string) => {
+const RenderPiece = (piece: string, renderBackground = true) => {
   const isUpperCase = piece === piece.toUpperCase();
   const color = isUpperCase ? "white" : "black";
   if (piecesDict[piece] === undefined) {
@@ -32,25 +32,37 @@ const RenderPiece = (piece: string) => {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "90%",
-        width: "90%",
-        backgroundColor: "#0000004d",
-        borderRadius: "50%",
-      }}
-    >
-      <FontAwesomeIcon
-        icon={piecesDict[piece]}
-        color={color}
-        style={{
-          fontSize: "2rem",
-        }}
-      />
-    </div>
+    <>
+      {renderBackground ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "90%",
+            width: "90%",
+            backgroundColor: "#0000004d",
+            borderRadius: "50%",
+          }}
+        >
+          <FontAwesomeIcon
+            icon={piecesDict[piece]}
+            color={color}
+            style={{
+              fontSize: "2rem",
+            }}
+          />
+        </div>
+      ) : (
+        <FontAwesomeIcon
+          icon={piecesDict[piece]}
+          color={color}
+          style={{
+            fontSize: "2rem",
+          }}
+        />
+      )}
+    </>
   );
 };
 
