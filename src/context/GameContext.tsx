@@ -16,6 +16,7 @@ export enum EGameStatus {
   Checkmate = "checkmate",
   Stalemate = "stalemate",
   Draw = "draw",
+  Black_Moves = "black_moves",
 }
 
 const initialBoard = [
@@ -34,6 +35,7 @@ const initialState = {
   selectedPiece: null,
   currentTurn: "white",
   gameStatus: EGameStatus.Ongoing,
+  boardHistory: [initialBoard],
 };
 
 const gameReducer = (state: any, action: any) => {
@@ -50,10 +52,23 @@ const gameReducer = (state: any, action: any) => {
             : cell
         )
       );
+
+      const newBoard = state.board.map((row: string[], rowIndex: number) =>
+        row.map((cell: string, colIndex: number) =>
+          rowIndex === action.payload.from.row &&
+          colIndex === action.payload.from.column
+            ? ""
+            : rowIndex === action.payload.to.row &&
+              colIndex === action.payload.to.column
+            ? state.board[action.payload.from.row][action.payload.from.column]
+            : cell
+        )
+      );
       return {
         ...state,
         board: newBoardMove,
         currentTurn: state.currentTurn === "white" ? "black" : "white",
+        boardHistory: [...state.boardHistory, newBoard],
       };
 
     case "CAPTURE_PIECE":
@@ -105,6 +120,14 @@ const gameReducer = (state: any, action: any) => {
       return {
         ...state,
         gameStatus: EGameStatus.Draw,
+      };
+
+    case EGameStatus.Black_Moves:
+      // Update your state based on the black's move
+      // For now, it's just changing the turn back to white
+      return {
+        ...state,
+        currentTurn: "white",
       };
 
     default:

@@ -255,7 +255,6 @@ export const isKingInCheck = (
   board: string[][],
   player: "white" | "black"
 ): boolean => {
-  console.log("Checking if king is in check");
   let kingPosition: IPosition | null = null;
   const opponent = player === "white" ? "black" : "white";
 

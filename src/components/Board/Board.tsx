@@ -22,10 +22,14 @@ import {
   insufficientMaterial,
   threefoldRepetition,
 } from "@/logic/checkDrawHelpers";
+import { fetchBlackMove } from "@/logic/requests";
+import { formatMove } from "@/logic/helpers";
+import { UiContext } from "@/context/UiContext";
 
 const Board: React.FC = () => {
   const { state, dispatch } = useContext(GameContext);
   const { board, selectedPiece, currentTurn } = state;
+  const { uiState, uiDispatch } = useContext(UiContext);
   const [highlightedCells, setHighlightedCells] = useState<string[][]>([]);
 
   const handleSelectPiece = (rowIndex: number, columnIndex: number) => {
@@ -67,6 +71,7 @@ const Board: React.FC = () => {
       },
     });
     dispatch({ type: "CLEAR_SELECTED_PIECE" });
+    logMove(from, to);
   };
 
   const handleEmptyCellClick = () => {
@@ -173,6 +178,19 @@ const Board: React.FC = () => {
     [dispatch] // dispatch is the dependency here, assuming it's coming from a useContext hook or similar
   );
 
+  const logMove = (from: IPosition, to: IPosition) => {
+    const piece = board[from.row][from.column];
+    const move = formatMove(from, to);
+    console.log(`log move from ui context: ${move}`);
+    uiDispatch({
+      type: "LOG_MOVE",
+      payload: {
+        move,
+        player: currentTurn,
+        piece,
+      },
+    });
+  };
   // Call checkGameStatus function after each move
   useEffect(() => {
     checkGameStatus(board, currentTurn);
@@ -189,6 +207,7 @@ const Board: React.FC = () => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === "u") {
         dispatch({ type: "CHANGE_TURN" });
+        uiDispatch({ type: "CHANGE_TURN" });
       }
     };
     window.addEventListener("keypress", handleKeyPress);
@@ -196,6 +215,16 @@ const Board: React.FC = () => {
       window.removeEventListener("keypress", handleKeyPress);
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    const makeBlackMove = async () => {
+      if (currentTurn === "black") {
+        const move = await fetchBlackMove();
+        dispatch({ type: EGameStatus.Black_Moves, payload: move });
+      }
+    };
+    makeBlackMove();
+  }, [currentTurn, dispatch]);
 
   return (
     <div className="board">
