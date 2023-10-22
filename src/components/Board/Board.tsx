@@ -221,20 +221,6 @@ const Board: React.FC = () => {
     }
   }, [selectedPiece]);
 
-  // Debug event listener to change turn when pressing key "U"
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "u") {
-        dispatch({ type: "CHANGE_TURN" });
-        uiDispatch({ type: "CHANGE_TURN" });
-      }
-    };
-    window.addEventListener("keypress", handleKeyPress);
-    return () => {
-      window.removeEventListener("keypress", handleKeyPress);
-    };
-  }, [dispatch]);
-
   useEffect(() => {
     const makeBlackMove = async () => {
       if (currentTurn === "black") {
