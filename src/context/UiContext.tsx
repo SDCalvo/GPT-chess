@@ -3,16 +3,14 @@ import React, { createContext, useReducer, useContext } from "react";
 
 interface UiState {
   playerTurn: "white" | "black";
-  gameLogs: string[];
   aiThinkingProcess: string[];
-  moveLog: string[];
+  logs: string[];
 }
 
 const initialUiState: UiState = {
   playerTurn: "white",
-  gameLogs: [],
+  logs: [],
   aiThinkingProcess: [],
-  moveLog: [],
 };
 
 const pieceDictionary: { [key: string]: string } = {
@@ -31,7 +29,19 @@ type UiAction =
   | {
       type: "LOG_MOVE";
       payload: { move: string; player: "white" | "black"; piece: string };
-    };
+    }
+  | {
+      type: "LOG_CAPTURE";
+      payload: {
+        move: string;
+        player: "white" | "black";
+        piece: string;
+        capturedPiece: string;
+      };
+    }
+  | { type: "LOG_CHECK"; player: "white" | "black" }
+  | { type: "LOG_CHECKMATE"; winner: "white" | "black" }
+  | { type: "LOG_STALEMATE" };
 
 const uiReducer = (state: UiState, action: UiAction): UiState => {
   switch (action.type) {
@@ -41,19 +51,48 @@ const uiReducer = (state: UiState, action: UiAction): UiState => {
         playerTurn: state.playerTurn === "white" ? "black" : "white",
       };
     case "ADD_GAME_LOG":
-      return { ...state, gameLogs: [...state.gameLogs, action.payload] };
+      return { ...state, logs: [...state.logs, action.payload] };
     case "SET_AI_THINKING_PROCESS":
       return { ...state, aiThinkingProcess: action.payload };
 
     case "LOG_MOVE":
       return {
         ...state,
-        moveLog: [
-          ...state.moveLog,
+        logs: [
+          ...state.logs,
           `${action.payload.player} ${
             pieceDictionary[action.payload.piece.toLowerCase()]
           } moved from ${action.payload.move}`,
         ],
+      };
+    case "LOG_CAPTURE":
+      return {
+        ...state,
+        logs: [
+          ...state.logs,
+          `${action.payload.player} ${
+            pieceDictionary[action.payload.piece.toLowerCase()]
+          } captured ${
+            pieceDictionary[action.payload.capturedPiece.toLowerCase()]
+          } on ${action.payload.move}`,
+        ],
+      };
+
+    case "LOG_CHECK":
+      console.log("LOG_CHECK");
+      return {
+        ...state,
+        logs: [...state.logs, `${action.player} king is in check`],
+      };
+    case "LOG_CHECKMATE":
+      return {
+        ...state,
+        logs: [...state.logs, `${action.winner} wins by checkmate`],
+      };
+    case "LOG_STALEMATE":
+      return {
+        ...state,
+        logs: [...state.logs, `The game is a stalemate`],
       };
     default:
       return state;

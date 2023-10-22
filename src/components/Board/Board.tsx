@@ -23,7 +23,7 @@ import {
   threefoldRepetition,
 } from "@/logic/checkDrawHelpers";
 import { fetchBlackMove } from "@/logic/requests";
-import { formatMove } from "@/logic/helpers";
+import { formatMove, formatTile } from "@/logic/helpers";
 import { UiContext } from "@/context/UiContext";
 
 const Board: React.FC = () => {
@@ -71,7 +71,11 @@ const Board: React.FC = () => {
       },
     });
     dispatch({ type: "CLEAR_SELECTED_PIECE" });
-    logMove(from, to);
+    if (actionType === "CAPTURE_PIECE") {
+      logCapture(from, to);
+    } else {
+      logMove(from, to);
+    }
   };
 
   const handleEmptyCellClick = () => {
@@ -139,6 +143,7 @@ const Board: React.FC = () => {
 
       // Check for checkmate or stalemate
       if (isKingInCheck(board, opponent)) {
+        uiDispatch({ type: "LOG_CHECK", player: opponent });
         if (!hasLegalMoves(board, opponent)) {
           console.log("-----------------------------------------------------");
           console.log(`${currentTurn} wins by checkmate!`);
@@ -181,13 +186,27 @@ const Board: React.FC = () => {
   const logMove = (from: IPosition, to: IPosition) => {
     const piece = board[from.row][from.column];
     const move = formatMove(from, to);
-    console.log(`log move from ui context: ${move}`);
     uiDispatch({
       type: "LOG_MOVE",
       payload: {
         move,
         player: currentTurn,
         piece,
+      },
+    });
+  };
+
+  const logCapture = (from: IPosition, to: IPosition) => {
+    const piece = board[from.row][from.column];
+    const capturedPiece = board[to.row][to.column];
+    const move = formatTile(to);
+    uiDispatch({
+      type: "LOG_CAPTURE",
+      payload: {
+        move,
+        player: currentTurn,
+        piece,
+        capturedPiece,
       },
     });
   };
