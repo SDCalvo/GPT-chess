@@ -1,19 +1,23 @@
 import {
+  ChatRequest,
   EModels,
-  IGetNextMoveRequest,
+  IMessage,
 } from "@/backend-types/langchain/langchainTypes";
 import LangchainService from "@/lib/langchain/langchainService";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { boardState, legalMoves, model } = req.body as IGetNextMoveRequest;
-  const langchainService = new LangchainService(model as EModels);
+  const { prompt, chatHistory, currentBoardState, last3BoardStates, model } =
+    req.body as ChatRequest;
+  const langchainService = new LangchainService(model);
   try {
-    const nextMove = await langchainService.getNextAiMove(
-      boardState,
-      legalMoves
+    const aiMessage = await langchainService.getChatResponse(
+      prompt,
+      chatHistory,
+      currentBoardState,
+      last3BoardStates
     );
-    res.status(200).json(nextMove);
+    res.status(200).json(aiMessage);
   } catch (error: any) {
     res.status(500).json({ error: error?.message });
   }

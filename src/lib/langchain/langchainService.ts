@@ -1,4 +1,4 @@
-import { EModels } from "@/backend-types/langchain/langchainTypes";
+import { EModels, IMessage } from "@/backend-types/langchain/langchainTypes";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { BaseMessageLike } from "langchain/schema";
 import { prompts, parsers } from "@/lib/langchain/promptsAndParsers";
@@ -37,6 +37,31 @@ class LangchainService {
     ).replace("{{LEGAL_MOVES}}", legalMoves.join("\n"));
     const response = await this.getGptResponse(prompt);
     return parsers.GET_NEXT_MOVE(response);
+  };
+
+  getChatResponse = async (
+    prompt: string,
+    chatHistory: IMessage[],
+    currentBoardState: string[][],
+    last3BoardStates: string[][][]
+  ): Promise<string> => {
+    const chat = this.getOpenAiClient();
+    const last3Moves = last3BoardStates
+      .map((boardState) => boardState.map((row) => row.join("")).join("\n"))
+      .join("\n");
+    const chatHistoryString = chatHistory
+      .map((message) => message.content)
+      .join("\n");
+    const promptWithReplacements = prompts.GET_CHAT_RESPONSE.replace(
+      "{{BOARD_STATE}}",
+      currentBoardState.map((row) => row.join("")).join("\n")
+    )
+      .replace("{{LAST_3_MOVES}}", last3Moves)
+      .replace("{{CHAT_HISTORY}}", chatHistoryString)
+      .replace("{{NEW_MESSAGE}}", prompt);
+    const message: BaseMessageLike = ["human", promptWithReplacements];
+    const response = await chat.call(message);
+    return response?.content;
   };
 }
 

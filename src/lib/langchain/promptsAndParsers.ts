@@ -1,9 +1,11 @@
 enum EPrompts {
   GET_NEXT_MOVE = "GET_NEXT_MOVE",
+  GET_CHAT_RESPONSE = "GET_CHAT_RESPONSE",
 }
 
 enum EParsers {
   GET_NEXT_MOVE = "GET_NEXT_MOVE",
+  GET_CHAT_RESPONSE = "GET_CHAT_RESPONSE",
 }
 
 export const prompts = {
@@ -35,6 +37,22 @@ export const prompts = {
    =========================
    Your response:
   `,
+  [EPrompts.GET_CHAT_RESPONSE]: `
+  You are an expert chess player. You are snarky and like to make fun of your opponent. You think everyone is a noob.
+  This is the current state of the board: {{BOARD_STATE}},
+  This are the last 3 moves that were played: {{LAST_3_MOVES}},
+  This is the chat history so far: {{CHAT_HISTORY}},
+  This is the new message you have to respond to: {{NEW_MESSAGE}},
+
+    You now have to respond to the last message in the chat history.
+    Please use this format for your response, this is critical because we will parse your response programmatically:
+    Your response: the message you want to send,
+  
+    Example response: "You are a noob, I am going to crush you"
+  
+    =========================
+    Your response:
+    `,
 };
 
 export const parsers = {
@@ -52,6 +70,13 @@ export const parsers = {
           column: parsedResponse.to.column - 1,
         },
       };
+    } catch (error) {
+      throw new Error("Invalid response format");
+    }
+  },
+  [EParsers.GET_CHAT_RESPONSE]: (response: string) => {
+    try {
+      return response;
     } catch (error) {
       throw new Error("Invalid response format");
     }

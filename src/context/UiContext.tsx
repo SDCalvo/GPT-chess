@@ -1,4 +1,5 @@
 import { IPosition } from "@/logic/gameLogic";
+import { IMessage } from "@/logic/requests";
 import React, { createContext, useReducer, useContext } from "react";
 
 interface UiState {
@@ -7,6 +8,7 @@ interface UiState {
   logs: string[];
   modalContent: React.ReactNode | null;
   isModalOpen: boolean;
+  chatHistory: IMessage[];
 }
 
 const initialUiState: UiState = {
@@ -15,6 +17,7 @@ const initialUiState: UiState = {
   logs: [],
   modalContent: null,
   isModalOpen: false,
+  chatHistory: [],
 };
 
 export const pieceDictionary: { [key: string]: string } = {
@@ -45,7 +48,8 @@ type UiAction =
     }
   | { type: "LOG_CHECK"; player: "white" | "black" }
   | { type: "LOG_CHECKMATE"; winner: "white" | "black" }
-  | { type: "LOG_STALEMATE" };
+  | { type: "LOG_STALEMATE" }
+  | { type: "ADD_CHAT_MESSAGE"; payload: IMessage };
 
 const uiReducer = (state: UiState, action: UiAction): UiState => {
   switch (action.type) {
@@ -97,6 +101,12 @@ const uiReducer = (state: UiState, action: UiAction): UiState => {
       return {
         ...state,
         logs: [...state.logs, `The game is a stalemate`],
+      };
+
+    case "ADD_CHAT_MESSAGE":
+      return {
+        ...state,
+        chatHistory: [...state.chatHistory, action.payload],
       };
     default:
       return state;

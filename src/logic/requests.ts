@@ -6,6 +6,11 @@ export enum EModels {
   GPT4 = "gpt-4",
 }
 
+export interface IMessage {
+  content: string;
+  type: "human" | "ai";
+}
+
 export const getBlackMove = async (
   boardState: string[][],
   legalMoves: IMove[],
@@ -17,7 +22,7 @@ export const getBlackMove = async (
       const response = await axios.post("/api/langchain/nextMove", {
         boardState,
         legalMoves,
-        model: EModels.GPT35TURBO, // or whichever model you choose to use
+        model: EModels.GPT35TURBO,
       });
       const move: IMove = response.data;
       dispatch({
@@ -31,5 +36,31 @@ export const getBlackMove = async (
       console.error(error);
       throw new Error("Failed to fetch the next move");
     }
+  }
+};
+
+export const getAiMessage = async (
+  prompt: string,
+  chatHistory: IMessage[],
+  currentBoardState: string[][],
+  last3BoardStates: string[][][],
+  dispatch: Function
+) => {
+  try {
+    const response = await axios.post("/api/langchain/getChatMessage", {
+      prompt,
+      chatHistory,
+      currentBoardState,
+      last3BoardStates,
+      model: EModels.GPT35TURBO, // or whichever model you choose to use
+    });
+    const message: string = response.data;
+    dispatch({
+      type: "ADD_CHAT_MESSAGE",
+      payload: { content: message, type: "ai" }, // assuming the type is either "ai" or "human"
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch AI message");
   }
 };

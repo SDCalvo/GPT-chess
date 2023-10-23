@@ -11,6 +11,14 @@ interface GameProviderProps {
   children: React.ReactNode;
 }
 
+interface gameState {
+  board: string[][];
+  selectedPiece: any;
+  currentTurn: string;
+  gameStatus: string;
+  boardHistory: string[][][];
+}
+
 export enum EGameStatus {
   Ongoing = "ongoing",
   Checkmate = "checkmate",
@@ -29,7 +37,7 @@ const initialBoard = [
   ["R", "N", "B", "Q", "K", "B", "N", "R"],
 ];
 
-const initialState = {
+const initialState: gameState = {
   board: initialBoard,
   selectedPiece: null,
   currentTurn: "white",
@@ -37,7 +45,7 @@ const initialState = {
   boardHistory: [initialBoard],
 };
 
-const gameReducer = (state: any, action: any) => {
+const gameReducer = (state: gameState, action: any): gameState => {
   switch (action.type) {
     case "MOVE_PIECE":
       const newBoardMove = state.board.map((row: string[], rowIndex: number) =>

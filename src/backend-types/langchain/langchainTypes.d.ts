@@ -8,3 +8,16 @@ export interface IGetNextMoveRequest {
   legalMoves: IMove[];
   model: EModels;
 }
+
+interface ChatRequest {
+  prompt: string;
+  chatHistory: IMessage[];
+  currentBoardState: string[][];
+  last3BoardStates: string[][][];
+  model: EModels;
+}
+
+export interface IMessage {
+  content: string;
+  type: "human" | "ai";
+}

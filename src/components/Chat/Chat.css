@@ -1,0 +1,120 @@
+.chat-out-container {
+    display : flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    margin-bottom: 20px;
+
+    .chat-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+}
+
+.chat-container {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: black;
+    color: limegreen;
+    padding: 20px;
+    border: 2px solid limegreen;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    border: 4px solid #118d11;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.chat-history::-webkit-scrollbar {
+    width: 12px;
+} 
+
+.chat-history::-webkit-scrollbar-thumb {
+    background-color: #4a534a;
+    border-radius: 6px;
+}
+.chat-history {
+    scrollbar-width: thin;
+    scrollbar-color: #00ff00 black;
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: 10px;
+}
+input {
+    width: 100%;
+    background-color: black;
+    color: limegreen;
+    border: 2px solid limegreen;
+}
+
+.chat-message {
+    max-width: 55%;
+    padding: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    border-radius: 12px;
+    font-size: 18px;
+}
+
+.chat-message.human {
+    align-self: flex-end;
+    margin-left: auto;
+    background-color: limegreen;
+    color: black;
+    animation: slideInRight 0.3s ease;
+}
+
+.chat-message.ai {
+    align-self: flex-start;
+    background-color: #555;
+    color: white;
+    animation: slideInLeft 0.3s ease;
+}
+
+.chat-message.human:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -10px;
+    width: 0;
+    height: 0;
+    border: 10px solid;
+    border-color: limegreen limegreen transparent transparent;
+}
+
+.chat-message.ai:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -10px;
+    width: 0;
+    height: 0;
+    border: 10px solid;
+    border-color: #555 #555 transparent transparent;
+}
+
+@keyframes slideInLeft {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
