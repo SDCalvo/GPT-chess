@@ -54,15 +54,39 @@ export const getAiMessage = async (
       chatHistory,
       currentBoardState,
       last3BoardStates,
-      model: EModels.GPT35TURBO, // or whichever model you choose to use
+      model: EModels.GPT35TURBO,
     });
     const message: string = response.data;
     dispatch({
       type: "ADD_CHAT_MESSAGE",
-      payload: { content: message, type: "ai" }, // assuming the type is either "ai" or "human"
+      payload: { content: message, type: "ai" },
     });
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to fetch AI message");
+    throw new Error("Failed to fetch AI message from function getAiMessage");
+  }
+};
+
+export const getReaction = async (
+  event: string,
+  chatHistory: IMessage[],
+  currentBoardState: string[][],
+  dispatch: Function
+) => {
+  try {
+    const response = await axios.post("/api/langchain/getReaction", {
+      event,
+      chatHistory,
+      currentBoardState,
+      model: EModels.GPT35TURBO,
+    });
+    const message: string = response.data;
+    dispatch({
+      type: "ADD_CHAT_MESSAGE",
+      payload: { content: message, type: "ai" },
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch AI message from function getReaction");
   }
 };

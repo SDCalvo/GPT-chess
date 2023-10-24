@@ -4,7 +4,6 @@ import "./Modal.css";
 
 const Modal: React.FC = () => {
   const { modalState, modalDispatch } = useModal();
-  console.log("Modal rendering, visible:", modalState.isVisible);
 
   if (!modalState.isVisible) return null;
 

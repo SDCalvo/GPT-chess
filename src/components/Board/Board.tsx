@@ -27,13 +27,18 @@ import { formatMove, formatTile } from "@/logic/helpers";
 import { UiContext } from "@/context/UiContext";
 import PawnCoronationModal from "../Modals/PawnCoronationModal";
 import { ModalContext } from "@/context/ModalContext";
-import { getBlackMove } from "@/logic/requests";
+import { getBlackMove, getReaction } from "@/logic/requests";
+
+enum EReactionType {
+  Capture = "capture",
+}
 
 const Board: React.FC = () => {
   const { state, dispatch } = useContext(GameContext);
   const { uiState, uiDispatch } = useContext(UiContext);
   const { modalDispatch } = useContext(ModalContext);
   const { board, selectedPiece, currentTurn } = state;
+  const [triggerReaction, setTriggerReaction] = useState<any>(null);
   const [highlightedCells, setHighlightedCells] = useState<string[][]>([]);
 
   type GameAction = {
@@ -82,12 +87,18 @@ const Board: React.FC = () => {
     dispatch({ type: "CLEAR_SELECTED_PIECE" });
     if (actionType === "CAPTURE_PIECE") {
       logCapture(from, to, currentTurn);
+      setTriggerReaction({
+        piece,
+        from,
+        to,
+        capturedPiece: destinationCell,
+        type: EReactionType.Capture,
+      });
     } else {
       logMove(from, to, currentTurn);
     }
 
     if (isPawnCoronationConditionMet(from, to)) {
-      console.log("Pawn coronation condition met");
       showModal(to);
     }
   };
@@ -279,6 +290,23 @@ const Board: React.FC = () => {
     };
     makeMove();
   }, [currentTurn, dispatch, board]);
+
+  useEffect(() => {
+    if (!triggerReaction) return;
+    if (triggerReaction?.type === EReactionType.Capture) {
+      const getAiReaction = async () => {
+        const event = `White player moved ${
+          triggerReaction.piece
+        } from ${formatTile(triggerReaction.from)} to ${formatTile(
+          triggerReaction.to
+        )} capturing ${triggerReaction.capturedPiece}`;
+        getReaction(event, uiState.chatHistory, state.board, uiDispatch);
+      };
+
+      getAiReaction();
+      setTriggerReaction(null);
+    }
+  }, [triggerReaction, state.board, uiState.chatHistory, uiDispatch]);
 
   return (
     <div className="board-outer-container">

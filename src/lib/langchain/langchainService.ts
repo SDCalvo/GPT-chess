@@ -40,9 +40,7 @@ class LangchainService {
       "{{BOARD_STATE}}",
       boardStateWithDotsInseadOfEmptySpaces
     ).replace("{{LEGAL_MOVES}}", legalMovesAsString.join("\n"));
-    console.log("prompt", prompt);
     const response = await this.getGptResponse(prompt);
-    console.log("response", response);
     return parsers.GET_NEXT_MOVE(response, legalMoves);
   };
 
@@ -66,6 +64,26 @@ class LangchainService {
       .replace("{{LAST_3_MOVES}}", last3Moves)
       .replace("{{CHAT_HISTORY}}", chatHistoryString)
       .replace("{{NEW_MESSAGE}}", prompt);
+    const message: BaseMessageLike = ["human", promptWithReplacements];
+    const response = await chat.call(message);
+    return response?.content;
+  };
+
+  getReaction = async (
+    event: string,
+    chatHistory: IMessage[],
+    currentBoardState: string[][]
+  ): Promise<string> => {
+    const chat = this.getOpenAiClient();
+    const chatHistoryString = chatHistory
+      .map((message) => message.content)
+      .join("\n");
+    const promptWithReplacements = prompts.REACTION.replace(
+      "{{BOARD_STATE}}",
+      currentBoardState.map((row) => row.join("")).join("\n")
+    )
+      .replace("{{CHAT_HISTORY}}", chatHistoryString)
+      .replace("{{EVENT}}", event);
     const message: BaseMessageLike = ["human", promptWithReplacements];
     const response = await chat.call(message);
     return response?.content;

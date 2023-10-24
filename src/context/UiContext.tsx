@@ -87,7 +87,6 @@ const uiReducer = (state: UiState, action: UiAction): UiState => {
       };
 
     case "LOG_CHECK":
-      console.log("LOG_CHECK");
       return {
         ...state,
         logs: [...state.logs, `${action.player} king is in check`],

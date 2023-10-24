@@ -9,6 +9,13 @@ export interface IGetNextMoveRequest {
   model: EModels;
 }
 
+export interface IGetReactionRequest {
+  event: string;
+  chatHistory: IMessage[];
+  currentBoardState: string[][];
+  model: EModels;
+}
+
 interface ChatRequest {
   prompt: string;
   chatHistory: IMessage[];
