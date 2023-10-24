@@ -17,6 +17,7 @@ interface gameState {
   currentTurn: string;
   gameStatus: string;
   boardHistory: string[][][];
+  winner?: string;
 }
 
 export enum EGameStatus {
