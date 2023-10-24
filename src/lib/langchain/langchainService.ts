@@ -31,12 +31,19 @@ class LangchainService {
     boardState: string[][],
     legalMoves: IMove[]
   ): Promise<IMove> => {
+    const legalMovesAsString = legalMoves.map((move) => JSON.stringify(move));
+    const boardStateWithDotsInseadOfEmptySpaces = boardState
+      .map((row) => row.join(""))
+      .join("\n")
+      .replace(/ /g, ".");
     const prompt = prompts.GET_NEXT_MOVE.replace(
       "{{BOARD_STATE}}",
-      boardState.map((row) => row.join("")).join("\n")
-    ).replace("{{LEGAL_MOVES}}", legalMoves.join("\n"));
+      boardStateWithDotsInseadOfEmptySpaces
+    ).replace("{{LEGAL_MOVES}}", legalMovesAsString.join("\n"));
+    console.log("prompt", prompt);
     const response = await this.getGptResponse(prompt);
-    return parsers.GET_NEXT_MOVE(response);
+    console.log("response", response);
+    return parsers.GET_NEXT_MOVE(response, legalMoves);
   };
 
   getChatResponse = async (
