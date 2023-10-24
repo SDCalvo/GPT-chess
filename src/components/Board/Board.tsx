@@ -81,9 +81,9 @@ const Board: React.FC = () => {
     });
     dispatch({ type: "CLEAR_SELECTED_PIECE" });
     if (actionType === "CAPTURE_PIECE") {
-      logCapture(from, to);
+      logCapture(from, to, currentTurn);
     } else {
-      logMove(from, to);
+      logMove(from, to, currentTurn);
     }
 
     if (isPawnCoronationConditionMet(from, to)) {
@@ -209,20 +209,28 @@ const Board: React.FC = () => {
     [dispatch, uiDispatch]
   );
 
-  const logMove = (from: IPosition, to: IPosition) => {
+  const logMove = (
+    from: IPosition,
+    to: IPosition,
+    player: "white" | "black"
+  ) => {
     const piece = board[from.row][from.column];
     const move = formatMove(from, to);
     uiDispatch({
       type: "LOG_MOVE",
       payload: {
         move,
-        player: currentTurn,
+        player: player,
         piece,
       },
     });
   };
 
-  const logCapture = (from: IPosition, to: IPosition) => {
+  const logCapture = (
+    from: IPosition,
+    to: IPosition,
+    player: "white" | "black"
+  ) => {
     const piece = board[from.row][from.column];
     const capturedPiece = board[to.row][to.column];
     const move = formatTile(to);
@@ -230,7 +238,7 @@ const Board: React.FC = () => {
       type: "LOG_CAPTURE",
       payload: {
         move,
-        player: currentTurn,
+        player: player,
         piece,
         capturedPiece,
       },
@@ -252,41 +260,104 @@ const Board: React.FC = () => {
     const makeMove = async () => {
       if (currentTurn === "black") {
         const legalMoves = getAllValidMoves(board, "black"); // get all legal moves for black
-        await getBlackMove(board, legalMoves, currentTurn, dispatch);
+        const move = await getBlackMove(
+          board,
+          legalMoves,
+          currentTurn,
+          dispatch
+        );
+        if (move) {
+          const from = move.from;
+          const to = move.to;
+          if (board[to.row][to.column] === "") {
+            logMove(from, to, currentTurn);
+          } else {
+            logCapture(from, to, currentTurn);
+          }
+        }
       }
     };
     makeMove();
   }, [currentTurn, dispatch, board]);
 
   return (
-    <div className="board">
-      {board.flat().map((cell: string, index: number) => {
-        const rowIndex = Math.floor(index / 8);
-        const columnIndex = index % 8;
-        const isOddRow = rowIndex % 2 === 1;
-        const isOddCol = columnIndex % 2 === 1;
-        const isHighlighted =
-          highlightedCells[rowIndex] &&
-          highlightedCells[rowIndex][columnIndex] === "highlighted";
-
-        const backgroundColor = isHighlighted
-          ? "green"
-          : (isOddRow && isOddCol) || (!isOddRow && !isOddCol)
-          ? "#F7DCB4"
-          : "#8B4513";
-        return (
+    <div className="board-outer-container">
+      <div className="board-container">
+        {/* Row Labels (Left Side) */}
+        {["8", "7", "6", "5", "4", "3", "2", "1"].map((label, index) => (
           <div
-            className={`cell ${
-              isSelected(rowIndex, columnIndex) ? "selected" : ""
-            }`}
             key={index}
-            onClick={() => handleCellClick(rowIndex, columnIndex)}
-            style={{ backgroundColor }}
+            className="label"
+            style={{ gridRow: index + 2, gridColumn: 1 }}
           >
-            {RenderPiece(cell)}
+            {label}
           </div>
-        );
-      })}
+        ))}
+
+        {/* Column Labels (Top Side) */}
+        {["A", "B", "C", "D", "E", "F", "G", "H"].map((label, index) => (
+          <div
+            key={index}
+            className="label"
+            style={{ gridRow: 1, gridColumn: index + 2 }}
+          >
+            {label}
+          </div>
+        ))}
+
+        {/* Board */}
+        <div className="board">
+          {board.flat().map((cell: string, index: number) => {
+            const rowIndex = Math.floor(index / 8);
+            const columnIndex = index % 8;
+            const isOddRow = rowIndex % 2 === 1;
+            const isOddCol = columnIndex % 2 === 1;
+            const isHighlighted =
+              highlightedCells[rowIndex] &&
+              highlightedCells[rowIndex][columnIndex] === "highlighted";
+
+            const backgroundColor = isHighlighted
+              ? "green"
+              : (isOddRow && isOddCol) || (!isOddRow && !isOddCol)
+              ? "#F7DCB4"
+              : "#8B4513";
+            return (
+              <div
+                className={`cell ${
+                  isSelected(rowIndex, columnIndex) ? "selected" : ""
+                }`}
+                key={index}
+                onClick={() => handleCellClick(rowIndex, columnIndex)}
+                style={{ backgroundColor }}
+              >
+                {RenderPiece(cell)}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Column Labels (Bottom Side) */}
+        {["A", "B", "C", "D", "E", "F", "G", "H"].map((label, index) => (
+          <div
+            key={index}
+            className="label"
+            style={{ gridRow: 11, gridColumn: index + 2 }}
+          >
+            {label}
+          </div>
+        ))}
+
+        {/* Row Labels (Right Side) */}
+        {["8", "7", "6", "5", "4", "3", "2", "1"].map((label, index) => (
+          <div
+            key={index}
+            className="label"
+            style={{ gridRow: index + 2, gridColumn: 11 }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

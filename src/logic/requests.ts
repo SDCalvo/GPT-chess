@@ -16,7 +16,7 @@ export const getBlackMove = async (
   legalMoves: IMove[],
   currentTurn: string,
   dispatch: Function
-) => {
+): Promise<IMove | null> => {
   if (currentTurn === "black") {
     try {
       const response = await axios.post("/api/langchain/nextMove", {
@@ -32,11 +32,13 @@ export const getBlackMove = async (
           to: { row: move.to.row, column: move.to.column },
         },
       });
+      return move; // return the move object
     } catch (error) {
       console.error(error);
       throw new Error("Failed to fetch the next move");
     }
   }
+  return null; // return null if currentTurn is not black
 };
 
 export const getAiMessage = async (

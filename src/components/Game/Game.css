@@ -7,6 +7,7 @@
     padding: 2rem 5rem;
     background-color: #282c34; /* Dark background color */
     color: white; /* White text color */
+    gap: 1rem;
 
     .top-container {
         display: flex;
