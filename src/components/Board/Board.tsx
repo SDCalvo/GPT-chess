@@ -295,12 +295,23 @@ const Board: React.FC = () => {
     if (!triggerReaction) return;
     if (triggerReaction?.type === EReactionType.Capture) {
       const getAiReaction = async () => {
-        const event = `White player moved ${
-          triggerReaction.piece
-        } from ${formatTile(triggerReaction.from)} to ${formatTile(
-          triggerReaction.to
-        )} capturing ${triggerReaction.capturedPiece}`;
-        getReaction(event, uiState.chatHistory, state.board, uiDispatch);
+        try {
+          uiDispatch({ type: "SET_LOADING" });
+          const event = `White player moved ${
+            triggerReaction.piece
+          } from ${formatTile(triggerReaction.from)} to ${formatTile(
+            triggerReaction.to
+          )} capturing ${triggerReaction.capturedPiece}`;
+          await getReaction(
+            event,
+            uiState.chatHistory,
+            state.board,
+            uiDispatch
+          );
+          uiDispatch({ type: "CLEAR_LOADING" });
+        } catch (e) {
+          console.log(e);
+        }
       };
 
       getAiReaction();

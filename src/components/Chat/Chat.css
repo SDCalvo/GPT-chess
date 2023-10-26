@@ -45,10 +45,18 @@
     margin-bottom: 10px;
 }
 input {
+    font-family: 'Courier New', Courier, monospace;
     width: 100%;
+    height: 40px;
     background-color: black;
-    color: limegreen;
+    color: white;
     border: 2px solid limegreen;
+    font-size: 18px;
+
+    &:focus {
+        outline: none;
+        border: 2px solid #164bb6;
+    }
 }
 
 .chat-message {
@@ -63,14 +71,14 @@ input {
 .chat-message.human {
     align-self: flex-end;
     margin-left: auto;
-    background-color: limegreen;
-    color: black;
+    background-color: rgb(36, 152, 36);
+    color: white;
     animation: slideInRight 0.3s ease;
 }
 
 .chat-message.ai {
     align-self: flex-start;
-    background-color: #555;
+    background-color: #1b39b3;
     color: white;
     animation: slideInLeft 0.3s ease;
 }
@@ -83,7 +91,7 @@ input {
     width: 0;
     height: 0;
     border: 10px solid;
-    border-color: limegreen limegreen transparent transparent;
+    border-color: rgb(36, 152, 36) rgb(36, 152, 36) transparent transparent;
 }
 
 .chat-message.ai:before {
@@ -94,8 +102,58 @@ input {
     width: 0;
     height: 0;
     border: 10px solid;
-    border-color: #555 #555 transparent transparent;
+    border-color: #1b39b3 #1b39b3 transparent transparent;
 }
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 10px 0;
+  }
+  
+  .dot-flashing {
+    width: 1rem;
+    height: 1rem;
+    background-color: #1b39b3;
+    border-radius: 50%;
+    position: relative;
+    animation: dotFlashing 1.3s infinite linear;
+  }
+  
+  .dot-flashing:before,
+  .dot-flashing:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: #1b39b3;
+  }
+  
+  .dot-flashing:before {
+    left: -1.5rem;
+    animation: dotFlashingBefore 1.3s infinite linear;
+  }
+  
+  .dot-flashing:after {
+    left: 1.5rem;
+    animation: dotFlashingAfter 1.3s infinite linear;
+  }
+  
+  @keyframes dotFlashingBefore {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(1.5rem) scale(0.8); }
+    100% { transform: translateX(0); }
+  }
+  
+  @keyframes dotFlashingAfter {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-1.5rem) scale(0.8); }
+    100% { transform: translateX(0); }
+  }
 
 @keyframes slideInLeft {
     0% {

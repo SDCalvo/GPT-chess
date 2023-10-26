@@ -20,16 +20,17 @@ const ChatComponent = () => {
         payload: { content: message, type: "human" },
       });
       setMessage("");
-      setDisableSend(true); // Disable the send button to prevent spam
+      setDisableSend(true);
+      uiDispatch({ type: "SET_LOADING" });
       await getAiMessage(
         message,
         uiState.chatHistory,
-        // Assuming you have access to currentBoardState and last3BoardStates here
         board,
         last3BoardStates,
         uiDispatch
       );
-      setDisableSend(false); // Enable the send button again
+      setDisableSend(false);
+      uiDispatch({ type: "CLEAR_LOADING" });
     }
   };
 
@@ -62,6 +63,11 @@ const ChatComponent = () => {
               {msg.content}
             </div>
           ))}
+          {uiState.isLoading && (
+            <div className="loading-container">
+              <div className="dot-flashing"></div>
+            </div>
+          )}
         </div>
         <input
           type="text"

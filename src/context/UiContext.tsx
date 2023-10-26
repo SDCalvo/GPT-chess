@@ -9,6 +9,7 @@ interface UiState {
   modalContent: React.ReactNode | null;
   isModalOpen: boolean;
   chatHistory: IMessage[];
+  isLoading: boolean;
 }
 
 const initialUiState: UiState = {
@@ -18,6 +19,7 @@ const initialUiState: UiState = {
   modalContent: null,
   isModalOpen: false,
   chatHistory: [],
+  isLoading: false,
 };
 
 export const pieceDictionary: { [key: string]: string } = {
@@ -49,7 +51,9 @@ type UiAction =
   | { type: "LOG_CHECK"; player: "white" | "black" }
   | { type: "LOG_CHECKMATE"; winner: "white" | "black" }
   | { type: "LOG_STALEMATE" }
-  | { type: "ADD_CHAT_MESSAGE"; payload: IMessage };
+  | { type: "ADD_CHAT_MESSAGE"; payload: IMessage }
+  | { type: "SET_LOADING" }
+  | { type: "CLEAR_LOADING" };
 
 const uiReducer = (state: UiState, action: UiAction): UiState => {
   switch (action.type) {
@@ -107,6 +111,11 @@ const uiReducer = (state: UiState, action: UiAction): UiState => {
         ...state,
         chatHistory: [...state.chatHistory, action.payload],
       };
+
+    case "SET_LOADING":
+      return { ...state, isLoading: true };
+    case "CLEAR_LOADING":
+      return { ...state, isLoading: false };
     default:
       return state;
   }

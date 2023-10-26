@@ -10,7 +10,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     req.body as IGetReactionRequest;
   const langchainService = new LangchainService(model as EModels);
   try {
-    console.log("getReaction: ", event, chatHistory, currentBoardState);
     const nextMove = await langchainService.getReaction(
       event,
       chatHistory,

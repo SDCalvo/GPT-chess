@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useContext } from "react";
 import { UiContext } from "@/context/UiContext";
+import LogEntry from "./LogEntry"; // Import the new LogEntry component
 import "./Log.css";
 
 const Log: React.FC = () => {
   const { uiState } = useContext(UiContext);
   const { logs } = uiState;
-
   const logContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -16,14 +16,12 @@ const Log: React.FC = () => {
         behavior: "smooth",
       });
     }
-  }, [logs]); // Effect runs whenever logs array changes
+  }, [logs]);
 
   return (
     <div className="log-container" ref={logContainerRef}>
       {logs.map((log, index) => (
-        <div key={index} className="log-entry">
-          <p className="log-entry-text">{log}</p>
-        </div>
+        <LogEntry key={index} text={log} /> // Use the LogEntry component here
       ))}
     </div>
   );
